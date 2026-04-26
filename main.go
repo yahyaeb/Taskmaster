@@ -53,6 +53,20 @@ func main() {
 	// Step 4 - confirm it worked
 	fmt.Printf("Loaded %d programs:\n", len(config.Programs))
 	for name, program := range config.Programs {
-		fmt.Printf("  - %s: %s\n", name, program.Cmd)
+		fmt.Printf("\n[%s]\n", name)
+		fmt.Printf("  cmd:          %s\n", program.Cmd)
+		fmt.Printf("  numprocs:     %d\n", program.NumProcs)
+		fmt.Printf("  umask:        %d\n", program.Umask)
+		fmt.Printf("  workingdir:   %s\n", program.WorkingDir)
+		fmt.Printf("  autostart:    %t\n", program.AutoStart)
+		fmt.Printf("  autorestart:  %s\n", program.AutoRestart)
+		fmt.Printf("  startretries: %d\n", program.StartRetries)
+		fmt.Printf("  starttime:    %d\n", program.StartTime)
+		fmt.Printf("  stopsignal:   %s\n", program.StopSignal)
+		fmt.Printf("  stoptime:     %d\n", program.StopTime)
+		fmt.Printf("  stdout:       %s\n", program.Stdout)
+		fmt.Printf("  stderr:       %s\n", program.Stderr)
 	}
+
+	// fmt.Printf("%+v\n", config)
 }

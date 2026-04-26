@@ -1,8 +1,8 @@
 programs:
   myprogram:
     cmd: "/workspace/a.out"
-    numprocs: 1
-    umask: 022
+    numprocs: 2
+    umask: 33
     workingdir: /tmp
     autostart: true
     autorestart: unexpected
@@ -20,17 +20,17 @@ programs:
   myprogram2:
     cmd: "/workspace/anotherOne.out"
     numprocs: 1
-    umask: 022
+    umask: 0
     workingdir: /tmp
     autostart: true
     autorestart: unexpected
     exitcodes:
       - 0
-    startretries: 3
+    startretries: 20
     starttime: 5
     stopsignal: TERM
     stoptime: 10
     stdout: /tmp/myprogram.stdout
     stderr: /tmp/myprogram.stderr
     env:
-      STARTED_BY: taskmaster
+      STARTED_BY: Taskmaster 2
