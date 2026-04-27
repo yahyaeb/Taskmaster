@@ -1,6 +1,6 @@
 programs:
   myprogram:
-    cmd: "/workspace/a.out"
+    cmd: "/workspaces/Taskmaster/workspaces/a.out"
     numprocs: 2
     umask: 33
     workingdir: /tmp
