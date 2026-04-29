@@ -18,7 +18,7 @@ programs:
       STARTED_BY: taskmaster
   
   myprogram2:
-    cmd: "/workspace/anotherOne.out"
+    cmd: "/workspaces/Taskmaster/workspaces/another.out"
     numprocs: 1
     umask: 0
     workingdir: /tmp

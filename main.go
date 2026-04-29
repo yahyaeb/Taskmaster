@@ -69,11 +69,17 @@ func main() {
 	// }
 
 	// fmt.Printf("%+v\n", config)
-	cmd := exec.Command(config.Programs["myprogram"].Cmd)
-	fmt.Printf("Starting '%s'...\n", config.Programs["myprogram"].Cmd)
-	// Start does not block; it returns immediately after spawning
-	if err := cmd.Start(); err != nil {
-		fmt.Println("Failed")
+	// cmd := exec.Command(config.Programs["myprogram"].Cmd)
+
+	for name, program := range config.Programs {
+		fmt.Printf("\n[%s]\n", name)
+		if program.AutoStart {
+			fmt.Printf("Starting '%s'...\n", program.Cmd)
+			cmd := exec.Command(program.Cmd)
+			if err := cmd.Start(); err != nil {
+				fmt.Printf("Failed to start '%s': %v\n", program.Cmd, err)
+			}
+		}
 	}
 
 	select {}
