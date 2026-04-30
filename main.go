@@ -28,6 +28,29 @@ import (
 	_ "strings" // parsing user commands
 )
 
+func (pm *ProcessManager) SpawnProcess(name string, instance int) {
+    program := pm.config.Programs[name]
+    instanceName := fmt.Sprintf("%s:%d", name, instance)
+    
+    cmd := exec.Command(program.Cmd)
+    if err := cmd.Start(); err != nil {
+        fmt.Printf("Failed to start '%s': %v\n", instanceName, err)
+        return
+    }
+    
+    fmt.Printf("Started '%s' with PID %d\n", instanceName, cmd.Process.Pid)
+    
+    // add to map
+    pm.mu.Lock()
+    pm.processes[instanceName] = &Process{
+        Name:   instanceName,
+        Config: program,
+        Cmd:    cmd,
+        State:  StateRunning,
+    }
+    pm.mu.Unlock()
+}
+
 func main() {
 	// Step 1 - did user provide a config file?
 	if len(os.Args) < 2 {
@@ -50,37 +73,51 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Step 4 - confirm it worked
-	// fmt.Printf("Loaded %d programs:\n", len(config.Programs))
-	// for name, program := range config.Programs {
-	// 	fmt.Printf("\n[%s]\n", name)
-	// 	fmt.Printf("  cmd:          %s\n", program.Cmd)
-	// 	// 	// 	fmt.Printf("  numprocs:     %d\n", program.NumProcs)
-	// 	// 	// 	fmt.Printf("  umask:        %d\n", program.Umask)
-	// 	// 	// 	fmt.Printf("  workingdir:   %s\n", program.WorkingDir)
-	// 	// 	// 	fmt.Printf("  autostart:    %t\n", program.AutoStart)
-	// 	// 	// 	fmt.Printf("  autorestart:  %s\n", program.AutoRestart)
-	// 	// 	// 	fmt.Printf("  startretries: %d\n", program.StartRetries)
-	// 	// 	// 	fmt.Printf("  starttime:    %d\n", program.StartTime)
-	// 	// 	// 	fmt.Printf("  stopsignal:   %s\n", program.StopSignal)
-	// 	// 	// 	fmt.Printf("  stoptime:     %d\n", program.StopTime)
-	// 	// 	// 	fmt.Printf("  stdout:       %s\n", program.Stdout)
-	// 	// 	// 	fmt.Printf("  stderr:       %s\n", program.Stderr)
-	// }
-
-	// fmt.Printf("%+v\n", config)
-	// cmd := exec.Command(config.Programs["myprogram"].Cmd)
-
+	fmt.Printf("================================================================\n")
+	fmt.Printf("TASKMASTER STARTING...\n")
+	fmt.Printf("================================================================\n")
+	programCount := 0
 	for name, program := range config.Programs {
 		fmt.Printf("\n[%s]\n", name)
 		if program.AutoStart {
 			fmt.Printf("Starting '%s'...\n", program.Cmd)
+			fmt.Printf("  command:          %s\n", program.Cmd)
+			fmt.Printf("  numprocs:         %d\n", program.NumProcs)
+			fmt.Printf("  autostart:          %t\n", program.AutoStart)
+			fmt.Printf("  autorestart:		%s\n", program.AutoRestart)
 			cmd := exec.Command(program.Cmd)
 			if err := cmd.Start(); err != nil {
 				fmt.Printf("Failed to start '%s': %v\n", program.Cmd, err)
-			}
+			} else {
+				fmt.Printf("Started successfully with PID %d\n", cmd.Process.Pid)
+				programCount++
+				// only watch it if it actually started
+				go func(c *exec.Cmd, n string) {
+					c.Wait()
+					fmt.Printf("%s exited\n", n)
+				}(cmd, name)
+}
 		}
+		
+	}
+	fmt.Printf("================================================================\n")
+	fmt.Printf("%d programs started.\n", programCount)
+	fmt.Printf("================================================================\n")
+	// select {}
+
+
+
+//-----------------------
+	pm := &ProcessManager{
+		processes: make(map[string]*Process),
+		config:    config,
 	}
 
-	select {}
+
+
+
+	// Start all autostart programs
+
+	fmt.Printf("ProcessManager ready, tracking %d processes.\n", len(pm.processes))
+
 }

@@ -1,5 +1,10 @@
 package main
 
+import (
+    "os/exec"
+    "sync"
+)
+
 type ProgramConfig struct {
 	Cmd          string            `yaml:"cmd"`
 	NumProcs     int               `yaml:"numprocs"`
@@ -19,4 +24,26 @@ type ProgramConfig struct {
 
 type Config struct {
 	Programs map[string]ProgramConfig `yaml:"programs"`
+}
+
+type ProcessState string
+
+const (
+    StateStarting ProcessState = "STARTING"
+    StateRunning  ProcessState = "RUNNING"
+    StateStopped  ProcessState = "STOPPED"
+    StateFatal    ProcessState = "FATAL"
+)
+
+type Process struct {
+    Name    string
+    Config  ProgramConfig
+    Cmd     *exec.Cmd
+    State   ProcessState
+}
+
+type ProcessManager struct {
+    mu       sync.Mutex
+    processes map[string]*Process
+    config   Config
 }
