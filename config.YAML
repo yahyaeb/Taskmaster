@@ -1,6 +1,6 @@
 programs:
   myprogram:
-    cmd: "/home/yel-bouk/Documents/Cursus/Taskmaster/workspaces/a.out"
+    cmd: "/Users/yahiaelboukili/Desktop/ecole_42_projects/Taskmaster/workspaces/another.out"
     numprocs: 2
     umask: 33
     workingdir: /tmp
@@ -18,7 +18,7 @@ programs:
       STARTED_BY: taskmaster
   
   myprogram2:
-    cmd: "/home/yel-bouk/Documents/Cursus/Taskmaster/workspaces/another.out"
+    cmd: "/Users/yahiaelboukili/Desktop/ecole_42_projects/Taskmaster/workspaces/a.out"
     numprocs: 1
     umask: 0
     workingdir: /tmp

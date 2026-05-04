@@ -2,53 +2,53 @@ package main
 
 import (
 	// Config & setup
+	"fmt"
 	"os"
+	"time"
 
-	_ "github.com/chzyer/readline" // shell line editing + history
+	// _ "github.com/chzyer/readline" // shell line editing + history
 	"gopkg.in/yaml.v3"
-	_ "gopkg.in/yaml.v3" // YAML config parsing
-
-	_ "os"        // file ops, env vars, umask, working directory
-	"os/exec"     // spawning child processes
-	_ "os/signal" // catching SIGCHLD, SIGHUP, SIGINT
+	// _ "gopkg.in/yaml.v3" // YAML config parsing
+	// _ "os"        // file ops, env vars, umask, working directory
+	"os/exec" // spawning child processes
+	// _ "os/signal" // catching SIGCHLD, SIGHUP, SIGINT
 
 	// Process control
-	_ "syscall" // signals (SIGTERM, SIGKILL, USR1...), umask, waitpid
+	// _ "syscall" // signals (SIGTERM, SIGKILL, USR1...), umask, waitpid
 
 	// Concurrency
-	_ "sync" // Mutex — protecting shared process state
-	_ "time" // starttime, stoptime timers
+	// _ "sync" // Mutex — protecting shared process state
+	// starttime, stoptime timers
 
 	// Logging
-	"fmt"   // formatting output
+	// formatting output
 	_ "log" // logging events to file
 
-	// Control shell
+	// Control shellss
 	_ "strconv" // string to int conversions
 	_ "strings" // parsing user commands
 )
 
 func (pm *ProcessManager) SpawnProcess(name string, instance int) {
-    program := pm.config.Programs[name]
-    instanceName := fmt.Sprintf("%s:%d", name, instance)
-    
-    cmd := exec.Command(program.Cmd)
-    if err := cmd.Start(); err != nil {
-        fmt.Printf("Failed to start '%s': %v\n", instanceName, err)
-        return
-    }
-    
-    fmt.Printf("Started '%s' with PID %d\n", instanceName, cmd.Process.Pid)
-    
-    // add to map
-    pm.mu.Lock()
-    pm.processes[instanceName] = &Process{
-        Name:   instanceName,
-        Config: program,
-        Cmd:    cmd,
-        State:  StateRunning,
-    }
-    pm.mu.Unlock()
+	program := pm.config.Programs[name]
+	instanceName := fmt.Sprintf("%s:%d", name, instance)
+
+	cmd := exec.Command(program.Cmd)
+	if err := cmd.Start(); err != nil {
+		fmt.Printf("Failed to start '%s': %v\n", instanceName, err)
+		return
+	}
+
+	fmt.Printf("Started '%s' with PID %d\n", instanceName, cmd.Process.Pid)
+
+	pm.mu.Lock()
+	pm.processes[instanceName] = &Process{
+		Name:   instanceName,
+		Config: program,
+		Cmd:    cmd,
+		State:  StateRunning,
+	}
+	pm.mu.Unlock()
 }
 
 func main() {
@@ -80,11 +80,11 @@ func main() {
 	for name, program := range config.Programs {
 		fmt.Printf("\n[%s]\n", name)
 		if program.AutoStart {
-			fmt.Printf("Starting '%s'...\n", program.Cmd)
-			fmt.Printf("  command:          %s\n", program.Cmd)
-			fmt.Printf("  numprocs:         %d\n", program.NumProcs)
-			fmt.Printf("  autostart:          %t\n", program.AutoStart)
-			fmt.Printf("  autorestart:		%s\n", program.AutoRestart)
+			// fmt.Printf("Starting '%s'...\n", program.Cmd)
+			// fmt.Printf("  command:          %s\n", program.Cmd)
+			// fmt.Printf("  numprocs:         %d\n", program.NumProcs)
+			// fmt.Printf("  autostart:          %t\n", program.AutoStart)
+			// fmt.Printf("  autorestart:		%s\n", program.AutoRestart)
 			cmd := exec.Command(program.Cmd)
 			if err := cmd.Start(); err != nil {
 				fmt.Printf("Failed to start '%s': %v\n", program.Cmd, err)
@@ -96,28 +96,42 @@ func main() {
 					c.Wait()
 					fmt.Printf("%s exited\n", n)
 				}(cmd, name)
-}
+			}
 		}
-		
+
 	}
 	fmt.Printf("================================================================\n")
 	fmt.Printf("%d programs started.\n", programCount)
 	fmt.Printf("================================================================\n")
 	// select {}
 
-
-
-//-----------------------
+	//-----------------------
 	pm := &ProcessManager{
 		processes: make(map[string]*Process),
 		config:    config,
 	}
 
+	for name, program := range config.Programs {
+		if program.AutoStart {
+			for i := 0; i < program.NumProcs; i++ {
+				pm.SpawnProcess(name, i)
+				time.Sleep(1 * time.Second)
+				if i == 1 {
+					for j := 0; j < 3; j++ {
 
-
-
+						fmt.Printf("hello from process %s\n", name)
+						fmt.Printf("1\n")
+						time.Sleep(1 * time.Second)
+						fmt.Printf("2\n")
+						time.Sleep(1 * time.Second)
+						fmt.Printf("3\n")
+						time.Sleep(1 * time.Second)
+					}
+				}
+			}
+		}
+	}
 	// Start all autostart programs
-
 	fmt.Printf("ProcessManager ready, tracking %d processes.\n", len(pm.processes))
-
+	select {}
 }
